@@ -1,0 +1,73 @@
+﻿<RibbonControl xmlns="clr-namespace:Autodesk.Windows;assembly=AdWindows"
+               xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+               xmlns:adwi="clr-namespace:Autodesk.Internal.InfoCenter;assembly=AdWindows"
+               xmlns:system="clr-namespace:System;assembly=mscorlib"
+               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:roamer="clr-namespace:Autodesk.Navisworks.Gui.Roamer.AIRLook;assembly=navisworks.gui.roamer" 
+               x:Uid="vCLabs" Name="vCLabs">
+
+    <RibbonTab x:Uid="vCLabs" Id="vCLabs" Title="vCLabs">
+
+        <RibbonPanel x:Uid="Reporter" Id="Reporter">
+            <RibbonPanelSource x:Uid="Reporter" Id="Reporter" Title="Reporter">
+
+                <RibbonRowPanel x:Uid="LogAndPreviewAndSettings" Id="LogAndPreviewAndSettings">
+
+                    <roamer:NWRibbonButton x:Uid="LogIssue" Id="LogIssue" 
+                                           Size="Standard" Text="Log Issue" ShowText="True"
+                                           Image="C:\Program Files\Autodesk\Navisworks Manage 2023\Plugins\Reporter vCLabs\Images\log_issue_16.png"
+                                           ShowImage="True" Orientation="Horizontal"/>
+                    
+                    <RibbonRowBreak Size="Standard"/>
+                    
+                    <roamer:NWRibbonButton x:Uid="PreviewPlan" Id="PreviewPlan" 
+                                           Size="Standard" Text="Preview Plan" ShowText="True"
+                                           Image="C:\Program Files\Autodesk\Navisworks Manage 2023\Plugins\Reporter vCLabs\Images\preview_plan_16.png"
+                                           ShowImage="True" Orientation="Horizontal" IsEnabled="False" />
+
+                    <RibbonRowBreak Size="Standard"/>
+
+                    <roamer:NWRibbonButton x:Uid="Settings" Id="Settings"
+                                           Size="Standard" Text="Settings" ShowText="True" 
+                                           Image="C:\Program Files\Autodesk\Navisworks Manage 2023\Plugins\Reporter vCLabs\Images\settings_16.png"
+                                           ShowImage="True" Orientation="Horizontal"/>
+
+                </RibbonRowPanel>
+
+                <roamer:NWRibbonButton x:Uid="Select Template" Id="SelectTemplate"
+                                       Size="Large" Text="Select Template" ShowText="True"
+                                       LargeImage="C:\Program Files\Autodesk\Navisworks Manage 2023\Plugins\Reporter vCLabs\Images\select_template_32.png"
+                                       ShowImage="True" Orientation="Vertical"/>
+
+                <roamer:NWRibbonButton x:Uid="Generate Report" Id="GenerateReport"
+                                       Size="Large" Text="Generate Report" ShowText="True"
+                                       LargeImage="C:\Program Files\Autodesk\Navisworks Manage 2023\Plugins\Reporter vCLabs\Images\generate_report_32.png"
+                                       ShowImage="True" Orientation="Vertical"/>
+                
+                <RibbonPanelBreak/>
+
+                <RibbonRowPanel x:Uid="SerialNumberAndStatistics" Id="SerialNumberAndStatistics">
+
+                    <roamer:NWRibbonButton x:Uid="SerialNumber" Id="SerialNumber"
+                                           Size="Standard" Text="Insert Serial Number" ShowText="True"
+                                           Image="C:\Program Files\Autodesk\Navisworks Manage 2023\Plugins\Reporter vCLabs\Images\serial_number_16.png" 
+                                           ShowImage="True" Orientation="Horizontal"/>
+
+                    <RibbonRowBreak Size="Standard"/>
+
+                    <roamer:NWRibbonButton x:Uid="Statistics" Id="Statistics"
+                                           Size="Standard" Text="Statistics" ShowText="True"
+                                           Image="C:\Program Files\Autodesk\Navisworks Manage 2023\Plugins\Reporter vCLabs\Images\statistics_16.png" 
+                                           ShowImage="True" Orientation="Horizontal"/>
+
+                </RibbonRowPanel>
+
+            </RibbonPanelSource>
+        </RibbonPanel>
+
+
+
+    </RibbonTab>
+
+
+</RibbonControl>

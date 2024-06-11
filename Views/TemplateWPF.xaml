@@ -1,0 +1,57 @@
+﻿<Window x:Class="Reporter_vCLabs.SelectTemplateView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Reporter_vCLabs"
+             Width="480" Height="240" 
+        Title="Select Template"
+        ResizeMode="NoResize">
+    
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="12*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="11*"/>
+        </Grid.ColumnDefinitions>
+
+        <Label Content="Template :" Grid.Row="0" Grid.Column="0" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black"/>
+
+        <Label Content="Space for Images in Template :" Grid.Row="1" Grid.Column="0"  FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black"/>
+
+        <Label Content="Space for Trade Legends in Template :" Grid.Row="2" Grid.Column="0" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black"/>
+
+        <Label Content="Space for Severity Legends in Template :" Grid.Row="3" Grid.Column="0" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black"/>
+
+
+
+        <Button Name="Browse_Button" Content="Browse" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" FontSize="12" Width="60" Height="20" HorizontalAlignment="Left" VerticalAlignment="Center" Click="Browse_Button_Click"/>
+
+
+        <Button Name="DefineSpaceForImage_Button" Content="Define" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" FontSize="12" Width="60" Height="20" HorizontalAlignment="Left" VerticalAlignment="Center" Click="DefineSpaceForImage_Button_Click" IsEnabled="False"/>
+
+
+        <CheckBox Name="DefineSpaceForTradeLegends_CheckBox" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="DefineSpaceForTradeLegends_CheckBox_Checked" Unchecked="DefineSpaceForTradeLegends_CheckBox_Unchecked"/>
+
+        <Button Name="DefineSpaceForTradeLegends_Button" Content="Define" Grid.Row="2" Grid.Column="2" FontSize="12" Width="60" Height="20" HorizontalAlignment="Left" VerticalAlignment="Center" Click="DefineSpaceForTradeLegends_Button_Click" IsEnabled="False"/>
+
+
+        <CheckBox Name="DefineSpaceForSeverityLegends_CheckBox" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="DefineSpaceForSeverityLegends_CheckBox_Checked" Unchecked="DefineSpaceForSeverityLegends_CheckBox_Unchecked"/>
+
+        <Button Name="DefineSpaceForSeverityLegends_Button" Content="Define" Grid.Row="3" Grid.Column="2" FontSize="12" Width="60" Height="20" HorizontalAlignment="Left" VerticalAlignment="Center" Click="DefineSpaceForSeverityLegends_Button_Click" IsEnabled="False"/>
+
+
+        <Button Name="OK_Button" Content="OK" Grid.Row="4" Grid.Column="2"  FontSize="12" Height="20" VerticalAlignment="Center" Click="OK_Button_Click" Margin="0,0,10,0" HorizontalAlignment="Right" Width="60"/>
+
+
+    </Grid>
+</Window>

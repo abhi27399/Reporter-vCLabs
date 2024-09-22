@@ -1,14 +1,11 @@
 ﻿using Autodesk.Navisworks.Api;
-using Autodesk.Navisworks.Gui.Roamer;
 using Newtonsoft.Json;
 using Reporter_vCLabs.Model;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Media;
 
 namespace Reporter_vCLabs
@@ -80,7 +77,7 @@ namespace Reporter_vCLabs
         {
             try
             {
-                if (GenerateReportWPF.IsRunning)
+                if (GenerateReportView.IsRunning)
                 {
                     return;
                 }
@@ -138,7 +135,7 @@ namespace Reporter_vCLabs
 
             catch(Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error Occured: {ex.Message}");
+                ex.Log("LogIssue", "SavedViewpoints_CurrentSavedViewpointChanged");
             }
         }
 
@@ -178,7 +175,7 @@ namespace Reporter_vCLabs
 
             catch(Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error Occured: {ex.Message}");
+                ex.Log("LogIssue", "AddTradeComboBoxItems");
             }
         }
 
@@ -218,7 +215,7 @@ namespace Reporter_vCLabs
 
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error Occured: {ex.Message}");
+                ex.Log("LogIssue", "AddSeverityComboBoxItems");
             }
         }
 
@@ -305,7 +302,7 @@ namespace Reporter_vCLabs
 
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error Occured: {ex.Message}");
+                ex.Log("LogIssue", "UpdateSavedViewpoint");
             }
 
         }

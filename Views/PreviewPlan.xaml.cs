@@ -1,22 +1,14 @@
-﻿using Autodesk.Navisworks.Api;
-using iTextSharp.text;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using Reporter_vCLabs.Model;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Forms;
-using System.Windows.Input;
+using System.Windows.Media.Imaging;
 using System.Windows.Media;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Reporter_vCLabs
 {
@@ -25,146 +17,76 @@ namespace Reporter_vCLabs
     /// </summary>
     public partial class PreviewPlan : Window
     {
-        private int currentindex = 0;
+        private ObservableCollection<SuperSavedViewPoint> SuperSavedViewPoints {  get; set; } = new ObservableCollection<SuperSavedViewPoint>();
+        
+        private List<Severity> SeverityList { get; set; } = new List<Severity>();
 
-        private List<SuperSavedViewPoint> superSavedViewPoints = new List<SuperSavedViewPoint>();
+        public static SuperSavedViewPoint PlanView { get; set; }
 
-        private readonly List<SuperSavedViewPoint> planViews = new List<SuperSavedViewPoint>();
+        public static List<SuperSavedViewPoint> IssueViewToBePlotted { get; set;} = new List<SuperSavedViewPoint>();
+
         public PreviewPlan()
         {
             InitializeComponent();
-
-            Previous_Button.IsEnabled = false;
-
-            Next_Button.IsEnabled = false;
-
-            superSavedViewPoints = ReporterCommandHandlerPlugin.SuperSavedViewPoints;
-
-            AddItemsInSelect_Planview_ComboBox();
-        }
-
-        private void AddItemsInSelect_Planview_ComboBox()
-        {
-            try
-            {
-                // Adding saved viewpoints in ComboBox on UI
-                AddComboBoxItemsWithCheckBox();
-            }
-
-            catch (Exception ex)
-            {
-                System.Windows.MessageBox.Show($"Error Getting Savedviewpoints : {ex.Message}");
-            }
-
-        }
-
-        private void AddComboBoxItemsWithCheckBox()
-        {
-            foreach (var svp in superSavedViewPoints)
-            {
-                // Creating a CheckBox inside a ComboBoxItem
-                System.Windows.Controls.CheckBox checkBox = new System.Windows.Controls.CheckBox { Content = svp.SavedViewpoint.DisplayName };
-                ComboBoxItem comboBoxItem = new ComboBoxItem { Content = checkBox };
-
-                // Add ComboBoxItems to the ComboBox
-                Select_Planview_ComboBox.Items.Add(comboBoxItem);
-
-                // Setting the selection event for the CheckBox
-                checkBox.Checked += CheckBox_Checked;
-
-                // setting the deselection event for the CheckBox
-                checkBox.Unchecked += CheckBox_Unchecked;
-            }
-
-        }
-
-        private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
-        {
-            System.Windows.Controls.CheckBox checkBox = sender as System.Windows.Controls.CheckBox;
-
-            foreach (var svp in superSavedViewPoints)
-            {
-                if (svp.SavedViewpoint.DisplayName == checkBox.Content as string)
-                {
-                    svp.IsPlanView = true;
-                    
-                }
-            }
-        }
-
-        private void CheckBox_Checked(object sender, RoutedEventArgs e)
-        {
-            System.Windows.Controls.CheckBox checkBox = sender as System.Windows.Controls.CheckBox;
-
-            foreach (var svp in superSavedViewPoints)
-            {
-                if (svp.SavedViewpoint.DisplayName == checkBox.Content as string)
-                {
-                    svp.IsPlanView = false;
-                }
-
-            }
-        }
-
-        private void Next_Button_Click(object sender, RoutedEventArgs e)
-        {
-            // Clearing all issue position rectangles for previous Plan View
-            canvas.Children.Clear();
-
-            if (currentindex < superSavedViewPoints.Count(item => item.IsPlanView) - 1)
-            {
-                currentindex++;
-                LoadImagePreview(currentindex);
-
-            }
             
-        }
+            Apply_Button.IsEnabled = false;
 
-        private void Previous_Button_Click(object sender, RoutedEventArgs e)
-        {
-            // Clearing all issue position rectangles for previous Plan View
-            canvas.Children.Clear();
+            ReporterCommandHandlerPlugin.SuperSavedViewPoints.ForEach(ssvp => { SuperSavedViewPoints.Add(ssvp); });
+            SeverityList = SettingsView.SeverityList; 
 
-            if (!(currentindex < 1))
-            {
-                currentindex--;
-                LoadImagePreview(currentindex);
-            }
-            
-        }
-
-        private void LoadImagePreview(int indexOfPlanView)
-        {
-            try
-            {
-                // Creating Bitmap of the plan view
-                Bitmap bitmap = planViews[indexOfPlanView].GenerateImage();
-
-                // Setting the Bitmap on the Image control by converting it into BitmapImage
-                imagePreview.Source = BitmapExtensions.ToBitmapImage(bitmap);
-            }
-
-            catch (Exception ex)
-            {
-                System.Windows.MessageBox.Show($"Error loading image: {ex.Message}");
-            }
-
-            
+            SelectPlan_ComboBox.ItemsSource = SuperSavedViewPoints;
+            SelectIssue_CheckComboBox.ItemsSource = SuperSavedViewPoints;
         }
 
         private void Preveiw_Button_Click(object sender, RoutedEventArgs e)
         {
-            LoadImagePreview(currentindex);
 
-            //PlotIssues();
+            if (SelectPlan_ComboBox.SelectedItem is null)
+            {
+                MessageBox.Show("Select Plan View");
+                return;
+            }
+
+            if (SelectIssue_CheckComboBox.SelectedItems.Count.Equals(0))
+            {
+                MessageBox.Show("Select Issue Views");
+                return;
+            }
+
+            SuperSavedViewPoint selectedPlan = SelectPlan_ComboBox.SelectedItem as SuperSavedViewPoint;
+            System.Collections.IList selectedIssues = SelectIssue_CheckComboBox.SelectedItems;
+
+            LoadImagePreview(selectedPlan);
+
+            PlotIssues(selectedPlan, selectedIssues);
+
+            Apply_Button.IsEnabled = true;
         }
 
-        private void PlotIssues()
+
+        private void LoadImagePreview( SuperSavedViewPoint superSavedViewPoint)
         {
             try
             {
-                var planView = planViews[currentindex];
+                // Creating Bitmap of the plan view
+                Bitmap bitmap = superSavedViewPoint.GenerateImage();
 
+                // Setting the Bitmap on the Image control by converting it into BitmapImage
+                imagePreview.Source = bitmap.ToBitmapImage();
+            }
+
+            catch (Exception ex)
+            {
+                ex.Log("Preview Plan", "LoadImagePreview");
+            }
+
+            
+        }
+
+        private void PlotIssues(SuperSavedViewPoint planView, System.Collections.IList issueViews)
+        {
+            try
+            {
                 // Getting the rotation of plan view along z axis
                 var rotation = planView.SavedViewpoint.Viewpoint.Rotation.ToString().Trim('(', ')').Replace(" ", "").Split(',');
                 double rot_angle = - Convert.ToDouble(rotation[2]) / (180d / Math.PI);
@@ -180,13 +102,13 @@ namespace Reporter_vCLabs
                 var planViewHorizontalExtent = float.Parse((planViewCameraJSONdata["HorizontalExtent"]).ToString());
                 var planViewVerticalExtent = float.Parse((planViewCameraJSONdata["VerticalExtent"]).ToString());
 
-                var reductionFactor_X = 1028f / planViewHorizontalExtent;
-                var reductionFactor_Y = 684f / planViewVerticalExtent;
+                var reductionFactor_X = 1200f / planViewHorizontalExtent;
+                var reductionFactor_Y = 780f / planViewVerticalExtent;
 
 
-                foreach (var issueView in superSavedViewPoints.Where(item => !item.IsPlanView))
+                foreach (SuperSavedViewPoint issueView in issueViews)
                 {
-                    var svpInfo = issueView.SavedViewpoint.DisplayName.Split('`', '.', '-');
+                    var serialNo = issueView.SerialNumber;
 
                     // Getting X and Y coordinates of the issue's position
                     var issueViewX = float.Parse(issueView.SavedViewpoint.Viewpoint.Position.X.ToString());
@@ -195,10 +117,10 @@ namespace Reporter_vCLabs
                     float issue_X = (float)((issueViewX - planViewX) * reductionFactor_X * Math.Cos(rot_angle) - (issueViewY - planViewY) * reductionFactor_Y * Math.Sin(rot_angle));
                     float issue_Y = (float)((issueViewX - planViewX) * reductionFactor_X * Math.Sin(rot_angle) + (issueViewY - planViewY) * reductionFactor_Y * Math.Cos(rot_angle));
 
-                    var ulx = 10f + 514f + issue_X;
-                    var uly = 10f + 342f - issue_Y;
+                    var ulx = 600f + issue_X;
+                    var uly = 400f - issue_Y;
 
-                    if (ulx < 10f || ulx > 1038f || uly < 10f || uly > 694f)
+                    if (ulx < 20f || ulx > 1160f || uly < 40f || uly > 780f)
                     {
                         continue;
                     }
@@ -215,42 +137,29 @@ namespace Reporter_vCLabs
 
                     TextBlock textBlock = new TextBlock
                     {
-                        Text = svpInfo[1],
+                        Text = serialNo,
                         FontSize = 15d,
                         HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
                         VerticalAlignment = System.Windows.VerticalAlignment.Center,
 
                     };
 
-                    if (svpInfo[0] == "r" || svpInfo[0] == "R")
-                    {
-                        rectangle.Stroke = System.Windows.Media.Brushes.Red;
-                        textBlock.Foreground = System.Windows.Media.Brushes.Red;
-                    }
 
-                    else if (svpInfo[0] == "b" || svpInfo[0] == "B")
-                    {
-                        rectangle.Stroke = System.Windows.Media.Brushes.Blue;
-                        textBlock.Foreground = System.Windows.Media.Brushes.Blue;
-                    }
+                    Severity severity = SeverityList.Find(s => s.Type.Equals(issueView.Severity));
 
-                    else if (svpInfo[0] == "y" || svpInfo[0] == "Y")
+                    if (severity is null)
                     {
-                        rectangle.Stroke = System.Windows.Media.Brushes.Yellow;
-                        rectangle.Fill = System.Windows.Media.Brushes.Yellow;
-                        textBlock.Foreground = System.Windows.Media.Brushes.Black;
-                    }
-
-                    else if (svpInfo[0] == "o" || svpInfo[0] == "O")
-                    {
-                        rectangle.Stroke = System.Windows.Media.Brushes.Orange;
-                        textBlock.Foreground = System.Windows.Media.Brushes.Orange;
+                        rectangle.Stroke = System.Windows.Media.Brushes.White;
+                        textBlock.Foreground = System.Windows.Media.Brushes.White;
                     }
 
                     else
-                    {
-                        rectangle.Stroke = System.Windows.Media.Brushes.White;
+                    {                        
+                        rectangle.Stroke = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(severity.Text_Color.A, severity.Text_Color.R, severity.Text_Color.G, severity.Text_Color.B));
+                        rectangle.Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(severity.Background_Color.A, severity.Background_Color.R, severity.Background_Color.G, severity.Background_Color.B));
+                        textBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(severity.Text_Color.A, severity.Text_Color.R, severity.Text_Color.G, severity.Text_Color.B));
                     }
+
 
                     // Setting the position of the issue position rectangles on the canvas
                     Canvas.SetLeft(rectangle, ulx - 10);
@@ -261,19 +170,78 @@ namespace Reporter_vCLabs
 
                     // Adding the issue position rectangles to the Canvas
                     canvas.Children.Add(rectangle);
-                    canvas.Children.Add(textBlock);
+                    canvas.Children.Add(textBlock);                    
                 }
 
             }
             catch(Exception ex) 
             {
-                System.Windows.MessageBox.Show($"Error Ploting Issues: {ex.Message}");
+                MessageBox.Show($"Error Ploting Issues: {ex.Message}");
             }
         }
 
-        private void Select_Planview_ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void SaveCanvasAsImage(Canvas canvas, string filename)
         {
+            // Setting up a RenderTargetBitmap to render the Canvas
+            var renderTarget = new RenderTargetBitmap(
+                (int)canvas.ActualWidth,
+                (int)canvas.ActualHeight,
+                96, 96,
+                PixelFormats.Pbgra32);
 
+            // Rendering the Canvas to the RenderTargetBitmap
+            renderTarget.Render(canvas);
+
+            // Creating a PNG BitmapEncoder to save the RenderTargetBitmap
+            var jpegEncoder = new JpegBitmapEncoder();
+            jpegEncoder.Frames.Add(BitmapFrame.Create(renderTarget));            
+
+            // Saving the image to a file
+            using (var fs = new FileStream(filename, FileMode.Create))
+            {
+                jpegEncoder.Save(fs);
+            }
+
+            //MessageBox.Show($"Canvas saved as {filename}");
+            MessageBox.Show("Plan View Applied");
+        }
+
+
+        private void Cancel_Button_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
+
+        private void Apply_Button_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                PlanView = (SelectPlan_ComboBox.SelectedItem as SuperSavedViewPoint);
+                var guid = PlanView.SavedViewpoint.Guid;
+                PlanView.IsPlanView = true;
+
+                var selectedIssues = SelectIssue_CheckComboBox.SelectedItems;
+                IssueViewToBePlotted.Clear();
+                foreach (var selectedIssue in selectedIssues)
+                {
+                    IssueViewToBePlotted.Add(selectedIssue as SuperSavedViewPoint);
+                }
+
+                if (!Directory.Exists($@"C:\ProgramData\Autodesk\Navisworks Manage 2023\Reporter_CanvasCache"))
+                {
+                    Directory.CreateDirectory($@"C:\ProgramData\Autodesk\Navisworks Manage 2023\Reporter_CanvasCache");
+                }
+
+                SaveCanvasAsImage(canvas, $@"C:\ProgramData\Autodesk\Navisworks Manage 2023\Reporter_CanvasCache\{guid}_canvasImage.jpeg");
+                Close();
+            }
+
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error Applying Plan View");
+                ex.Log("PreviewPlan", "Apply_Button_Click");
+            }
+            
         }
     }
 }

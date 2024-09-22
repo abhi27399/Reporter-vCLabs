@@ -34,20 +34,20 @@
 
 
 
-        <Button Name="Browse_Button" Content="Browse" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" FontSize="12" Width="60" Height="20" HorizontalAlignment="Left" VerticalAlignment="Center" Click="Browse_Button_Click"/>
+        <Button Name="Browse_Button" Content="Browse" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" FontSize="12" Width="60" Height="20" HorizontalAlignment="Left" VerticalAlignment="Center" Command="{Binding BrowseCommand}"/>
 
 
-        <Button Name="DefineSpaceForImage_Button" Content="Define" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" FontSize="12" Width="60" Height="20" HorizontalAlignment="Left" VerticalAlignment="Center" Click="DefineSpaceForImage_Button_Click" IsEnabled="False"/>
+        <Button Name="DefineSpaceForImage_Button" Content="Define" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" FontSize="12" Width="60" Height="20" HorizontalAlignment="Left" VerticalAlignment="Center" Command="{Binding ShowCommand}" IsEnabled="False"/>
 
 
         <CheckBox Name="DefineSpaceForTradeLegends_CheckBox" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="DefineSpaceForTradeLegends_CheckBox_Checked" Unchecked="DefineSpaceForTradeLegends_CheckBox_Unchecked"/>
 
-        <Button Name="DefineSpaceForTradeLegends_Button" Content="Define" Grid.Row="2" Grid.Column="2" FontSize="12" Width="60" Height="20" HorizontalAlignment="Left" VerticalAlignment="Center" Click="DefineSpaceForTradeLegends_Button_Click" IsEnabled="False"/>
+        <Button Name="DefineSpaceForTradeLegends_Button" Content="Define" Grid.Row="2" Grid.Column="2" FontSize="12" Width="60" Height="20" HorizontalAlignment="Left" VerticalAlignment="Center" Command="{Binding ShowCommand}" IsEnabled="False"/>
 
 
         <CheckBox Name="DefineSpaceForSeverityLegends_CheckBox" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="DefineSpaceForSeverityLegends_CheckBox_Checked" Unchecked="DefineSpaceForSeverityLegends_CheckBox_Unchecked"/>
 
-        <Button Name="DefineSpaceForSeverityLegends_Button" Content="Define" Grid.Row="3" Grid.Column="2" FontSize="12" Width="60" Height="20" HorizontalAlignment="Left" VerticalAlignment="Center" Click="DefineSpaceForSeverityLegends_Button_Click" IsEnabled="False"/>
+        <Button Name="DefineSpaceForSeverityLegends_Button" Content="Define" Grid.Row="3" Grid.Column="2" FontSize="12" Width="60" Height="20" HorizontalAlignment="Left" VerticalAlignment="Center" Command="{Binding ShowCommand}" IsEnabled="False"/>
 
 
         <Button Name="OK_Button" Content="OK" Grid.Row="4" Grid.Column="2"  FontSize="12" Height="20" VerticalAlignment="Center" Click="OK_Button_Click" Margin="0,0,10,0" HorizontalAlignment="Right" Width="60"/>

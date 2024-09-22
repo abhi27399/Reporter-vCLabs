@@ -1,20 +1,5 @@
 ﻿using Reporter_vCLabs.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Forms;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Reporter_vCLabs
 {
@@ -30,26 +15,7 @@ namespace Reporter_vCLabs
             InitializeComponent();
 
             selectTemplateViewModel = new SelectTemplateViewModel(this);
-        }
-
-        private void Browse_Button_Click(object sender, RoutedEventArgs e)
-        {
-            selectTemplateViewModel.BrowseTemplate();
-        }
-
-        private void DefineSpaceForImage_Button_Click(object sender, RoutedEventArgs e)
-        {
-            selectTemplateViewModel.ShowTemplate();
-        }
-
-        private void DefineSpaceForTradeLegends_Button_Click(object sender, RoutedEventArgs e)
-        {
-            selectTemplateViewModel.ShowTemplate();
-        }
-
-        private void DefineSpaceForSeverityLegends_Button_Click(object sender, RoutedEventArgs e)
-        {
-            selectTemplateViewModel.ShowTemplate();
+            this.DataContext = selectTemplateViewModel;
         }
 
         private void OK_Button_Click(object sender, RoutedEventArgs e)

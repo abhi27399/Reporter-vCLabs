@@ -8,5 +8,11 @@ namespace Reporter_vCLabs.ViewModels
 {
     internal class GenerateReportViewModel
     {
+        public GenerateReportViewModel()
+        {
+
+        }
+
+
     }
 }

@@ -12,7 +12,7 @@ namespace Reporter_vCLabs
     /// <summary>
     /// Interaction logic for Settings.xaml
     /// </summary>
-    public partial class Settings : Window
+    public partial class SettingsView : Window
     {
         private static Dictionary<string, string> _projectDetailsDictionary = new Dictionary<string, string>();
 
@@ -25,7 +25,7 @@ namespace Reporter_vCLabs
         public static List<Severity> SeverityList { get => _severityList; set => _severityList = value; }
         public static double ImageQualityValue { get; set; } = 1d;
 
-        public Settings()
+        public SettingsView()
         {
             InitializeComponent();
 
@@ -105,7 +105,7 @@ namespace Reporter_vCLabs
 
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error :{ex.Message}");
+                ex.Log("LogIssue", "PopulateProjectDetailFields");
             }
         }
 
@@ -152,7 +152,7 @@ namespace Reporter_vCLabs
 
             catch(Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error Populating Trade Input Fields: {ex.Message}");
+                ex.Log("LogIssue", "PopulateTradeInputFields");
             }
 
             
@@ -201,7 +201,7 @@ namespace Reporter_vCLabs
 
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error Populating Severity Input Fields: {ex.Message}");
+                ex.Log("LogIssue", "PopulateSeverityInputFields");
             }
         }
 
@@ -363,7 +363,7 @@ namespace Reporter_vCLabs
 
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error Retrieving Project Details Input Values :{ex.Message}");
+                ex.Log("LogIssue", "RetrieveProjectDetails");
             }
         }
 
@@ -404,7 +404,7 @@ namespace Reporter_vCLabs
 
             catch(Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error Retrieving Trade Input Values: {ex.Message}");
+                ex.Log("LogIssue", "RetrieveTradeInputFields");
             }
         }
 
@@ -444,7 +444,7 @@ namespace Reporter_vCLabs
 
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error Retrieving Severity Input Values: {ex.Message}");
+                ex.Log("LogIssue", "RetrieveSeverityInputFields");
             }
         }
 
@@ -457,7 +457,7 @@ namespace Reporter_vCLabs
 
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error Retrieving Image Quality Value: {ex.Message}");
+                ex.Log("LogIssue", "RetrieveImageQualityValue");
             }
         }
 

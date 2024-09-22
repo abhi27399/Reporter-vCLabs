@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 using Reporter_vCLabs.Model;
 using System.Drawing;
-using System.Windows.Documents;
 
 namespace Reporter_vCLabs
 {
@@ -18,11 +17,7 @@ namespace Reporter_vCLabs
 
             Redlines redlines = JsonConvert.DeserializeObject<Redlines>(redlineCollectionJSON);
 
-            for (int i = 0; i < redlines.Values.Length; i++)
-            {
-                dynamic redline = redlines.Values[i];
-                redline.Thickness = redline.Thickness * sizeEnhancingFactor;
-            }
+            redlines.EnhanceThickness(sizeEnhancingFactor);
 
             string modiefiedRedlineCollectionJSON = JsonConvert.SerializeObject(redlines);
             view.SetRedlines(modiefiedRedlineCollectionJSON);

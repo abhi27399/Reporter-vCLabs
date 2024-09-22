@@ -14,14 +14,15 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
+using static Autodesk.Navisworks.Gui.Roamer.CommandLineConfig;
 
 
 namespace Reporter_vCLabs
 {
     /// <summary>
-    /// Interaction logic for GenerateReportWPF.xaml
+    /// Interaction logic for GenerateReportView.xaml
     /// </summary>
-    public partial class GenerateReportWPF : Window
+    public partial class GenerateReportView : Window
     {
         private List<SuperSavedViewPoint> SuperSavedViewPoints { get; set; }
 
@@ -67,25 +68,73 @@ namespace Reporter_vCLabs
         public int NumberOfImagesPerPage { get => numberOfImagesPerPage; set => numberOfImagesPerPage = value; }
         public static bool IsRunning { get => isRunning; set => isRunning = value; }
 
-        public GenerateReportWPF()
+        private SuperSavedViewPoint _planView;
+
+        private List<SuperSavedViewPoint> _issueViewsToBePlotted;
+
+        public GenerateReportView()
         {
             InitializeComponent();
 
             SuperSavedViewPoints = ReporterCommandHandlerPlugin.SuperSavedViewPoints;
 
-            Select_Planview_ComboBox.ItemsSource = SuperSavedViewPoints;
+            //Select_Planview_ComboBox.ItemsSource = SuperSavedViewPoints;
+
+            GetPlanViewFromPreviewPlanView();
+
+            GetIssueViewsToBePlottedFromPlanView();
 
             isRunning = true;
         }
 
+        private void GetPlanViewFromPreviewPlanView()
+        {
+            var planView = PreviewPlan.PlanView;
+            bool exists = false;
+            if (planView != null)
+            {
+                exists = SuperSavedViewPoints.Exists(p => p.SavedViewpoint.Guid.Equals(planView.SavedViewpoint.Guid));
+            }
+
+            if (exists)
+            {
+                _planView = SuperSavedViewPoints.Find(p => p.SavedViewpoint.Guid.Equals(planView.SavedViewpoint.Guid));
+                _planView.IsPlanView = true;
+                _planView.ImagePath = $@"C:\ProgramData\Autodesk\Navisworks Manage 2023\Reporter_CanvasCache\{_planView.SavedViewpoint.Guid}_canvasImage.jpeg";
+            }
+        }
+
+        private void GetIssueViewsToBePlottedFromPlanView()
+        {
+            var issueViewsToBePlotted = PreviewPlan.IssueViewToBePlotted;
+
+            if(issueViewsToBePlotted.Count == 0) 
+            {
+                _issueViewsToBePlotted = new List<SuperSavedViewPoint>(SuperSavedViewPoints);
+                return; 
+            }
+
+            var exists = SuperSavedViewPoints.Exists(ssvp => ssvp.SavedViewpoint.Guid.Equals(issueViewsToBePlotted.First().SavedViewpoint.Guid));
+
+            if(exists)
+            {
+                _issueViewsToBePlotted = new List<SuperSavedViewPoint>(issueViewsToBePlotted);
+            }
+
+            else
+            {
+                _issueViewsToBePlotted = new List<SuperSavedViewPoint>(SuperSavedViewPoints);
+            }
+        }
+
         private void AddPlanView_CheckBox_Checked(object sender, RoutedEventArgs e)
         {
-            Select_Planview_ComboBox.IsEnabled = true;
+            //Select_Planview_ComboBox.IsEnabled = true;
         }
 
         private void AddPlanView_CheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
-            Select_Planview_ComboBox.IsEnabled = false;
+            //Select_Planview_ComboBox.IsEnabled = false;
         }
 
         private void No_Of_Images_per_page_ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -141,13 +190,13 @@ namespace Reporter_vCLabs
 
                     try
                     {
-                        int totalNoOfSavedViewpoints = SuperSavedViewPoints.Count;
+                        int totalNoOfSavedViewpoints = _issueViewsToBePlotted.Count;
 
                         Dictionary<string, int> savedViewpointsBySeverity = new Dictionary<string, int>();
                         Dictionary<string, int> savedViewpointsByTrade = new Dictionary<string, int>();
 
 
-                        foreach (var ssvp in SuperSavedViewPoints)
+                        foreach (var ssvp in _issueViewsToBePlotted)
                         {
                             if (savedViewpointsBySeverity.ContainsKey(ssvp.Severity))
                             {
@@ -188,7 +237,7 @@ namespace Reporter_vCLabs
 
                     catch(Exception ex)
                     {
-                        System.Windows.MessageBox.Show($"Error Mixpanel Tracking : {ex.Message}");
+                        ex.Log("GenearteReportWPF", $"Error Mixpanel Tracking : {ex.Message}");
                     }
 
                     this.Close();
@@ -241,15 +290,20 @@ namespace Reporter_vCLabs
 
         private void AddPlanViewsAndDescription(PdfStamper pdfStamper, BaseFont baseFont)
         {
+            if(_planView is null)
+            {
+                return;
+            }
+
             int pageNo = 0;
 
-            foreach (var planView in SuperSavedViewPoints.Where(item => item.IsPlanView))
-            {
+            //foreach (var planView in SuperSavedViewPoints.Where(item => item.IsPlanView))
+            //{
                 //Creating a pdfContentByte for storing the content of the first pageAsPdfDictionary
                 var pdfContentByte = pdfStamper.GetOverContent(++pageNo);
 
                 //Creating an image instance from the image _path
-                iTextSharp.text.Image image = iTextSharp.text.Image.GetInstance(planView.ImagePath);
+                iTextSharp.text.Image image = iTextSharp.text.Image.GetInstance(_planView.ImagePath);
                 imageHeight = image.Height;
                 imageWidth = image.Width;
 
@@ -272,33 +326,30 @@ namespace Reporter_vCLabs
                 pdfContentByte.AddTemplate(nameTemplate, (pageWidth - annot_ulx) + (annot_ulx - annot_lrx) / 2 - 125, annot_lry);
 
                 //Setting the iamge's scale to fit the space
-                image.ScaleAbsolute(annot_ulx - annot_lrx, annot_ulx - annot_lrx);
+                image.ScaleAbsolute(annot_ulx - annot_lrx, annot_uly - annot_lry - 25);
 
                 //Setting the image's Absolute Postion in the page
                 image.SetAbsolutePosition(pageWidth - annot_ulx, annot_lry + 25);
 
                 pdfContentByte.AddImage(image);
 
-            }
+            //}
         }
 
         private void AddIssueViewsAndDescription(PdfStamper pdfStamper, BaseFont baseFont)
         {
-            int pageNo = SuperSavedViewPoints.Count(item => item.IsPlanView) + 1;
+            //int pageNo = _issueViewsToBePlotted.Count(item => item.IsPlanView) + 1;
+            int pageNo = 2;
 
             //Adding issueViewPoint from next page
             switch (NumberOfImagesPerPage)
             {
                 case 1:
                     {
-                        foreach (var issueViewPoint in SuperSavedViewPoints.Where(item => !item.IsPlanView))
+                        foreach (var issueViewPoint in _issueViewsToBePlotted.Where(item => !item.IsPlanView))
                         {
                             table_llx = pageWidth - annot_ulx;
-                            table_lly = annot_lry;
-
-
-
-                            
+                            table_lly = annot_lry;                            
 
                             //Creating a pdfContentByte for storing the content 
                             var pdfContentByte_after_planview = pdfStamper.GetOverContent(pageNo++);
@@ -372,7 +423,7 @@ namespace Reporter_vCLabs
 
                         int i = 0;
 
-                        foreach (var issueViewPoint in SuperSavedViewPoints.Where(item => !item.IsPlanView))
+                        foreach (var issueViewPoint in _issueViewsToBePlotted.Where(item => !item.IsPlanView))
                         {
                             // Creating a pdfContentByte for storing the content 
                             var pdfContentByte_after_planview = pdfStamper.GetOverContent(pageNo);
@@ -544,7 +595,7 @@ namespace Reporter_vCLabs
 
                         cell_margin = 2.5f;
 
-                        foreach (var issueViewPoint in SuperSavedViewPoints.Where(item => !item.IsPlanView))
+                        foreach (var issueViewPoint in _issueViewsToBePlotted.Where(item => !item.IsPlanView))
                         {
                             // Creating a pdfContentByte for storing the content 
                             var pdfContentByte_after_planview = pdfStamper.GetOverContent(pageNo);
@@ -769,7 +820,7 @@ namespace Reporter_vCLabs
                 PdfReader reader = new PdfReader(new FileStream(selectedFolderPath + "\\" + "templatePDF.pdf", FileMode.Open, FileAccess.Read, FileShare.Read));
 
                 // Creating a pdfstamper
-                var pdfStamper = new PdfStamper(reader, new FileStream(selectedFolderPath + "\\" + "reportPDF_noPlot.pdf", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite));
+                var pdfStamper = new PdfStamper(reader, new FileStream(selectedFolderPath + "\\" + reportFileName + ".pdf", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite));
 
                 BaseFont baseFont = BaseFont.CreateFont(BaseFont.HELVETICA_BOLD, BaseFont.CP1252, true);
 
@@ -786,7 +837,7 @@ namespace Reporter_vCLabs
                 System.IO.File.Delete(selectedFolderPath + "\\" + "templatePDF.pdf");
 
                 // Ploting issues on plan view
-                PlotIssuesOnPlanView();
+                //PlotIssuesOnPlanView();
             }
 
             catch(Exception ex)
@@ -1023,7 +1074,7 @@ namespace Reporter_vCLabs
 
                 double sizeEnhancingFactor = ReporterCommandHandlerPlugin.GetSizeEnhancingFactor();
 
-                foreach (var superSavedViewPoint in SuperSavedViewPoints)
+                foreach (var superSavedViewPoint in _issueViewsToBePlotted.Where(ssvp=>!ssvp.IsPlanView))
                 {
                     // Creating Bitmap of the superSavedViewPoint
                     Bitmap bitmap = superSavedViewPoint.GenerateImage(sizeEnhancingFactor);
@@ -1081,25 +1132,25 @@ namespace Reporter_vCLabs
                 pdfContentByte.EndText();
                 pdfContentByte.RestoreState();
 
-                if(Settings.SeverityList.Count != 0)
+                if(SettingsView.SeverityList.Count != 0)
                 {
-                    for(int i = 0; i < Settings.SeverityList.Count; i++)
+                    for(int i = 0; i < SettingsView.SeverityList.Count; i++)
                     {
                         iTextSharp.text.Rectangle rect = new iTextSharp.text.Rectangle(severity_spaceRect_ulx + 5f, severity_spaceRect_uly - 15f - (i + 1) * rect_h, severity_spaceRect_ulx + 5f + rect_w, severity_spaceRect_uly - 15f - i * rect_h)
                         {
                             Border = 15,
-                            BackgroundColor = new BaseColor(Settings.SeverityList[i].Background_Color),
+                            BackgroundColor = new BaseColor(SettingsView.SeverityList[i].Background_Color),
                         };
 
                         pdfContentByte.Rectangle(rect);
 
-                        pdfContentByte.SetColorFill(new BaseColor(Settings.SeverityList[i].Text_Color));
+                        pdfContentByte.SetColorFill(new BaseColor(SettingsView.SeverityList[i].Text_Color));
 
                         pdfContentByte.SaveState();
                         pdfContentByte.BeginText();
 
                         pdfContentByte.SetFontAndSize(baseFont, 8f);
-                        pdfContentByte.ShowTextAligned(Element.ALIGN_LEFT, Settings.SeverityList[i].Type, rect.Left, (rect.Bottom + rect.Top) / 2f - 4f, 0);
+                        pdfContentByte.ShowTextAligned(Element.ALIGN_LEFT, SettingsView.SeverityList[i].Type, rect.Left, (rect.Bottom + rect.Top) / 2f - 4f, 0);
 
                         pdfContentByte.EndText();
                         pdfContentByte.RestoreState();
@@ -1172,17 +1223,17 @@ namespace Reporter_vCLabs
                 pdfContentByte.EndText();
                 pdfContentByte.RestoreState();
 
-                if (Settings.TradeList.Count != 0)
+                if (SettingsView.TradeList.Count != 0)
                 {
-                    if (Settings.TradeList.Count <= 5)
+                    if (SettingsView.TradeList.Count <= 5)
                     {
-                        for (int i = 0; i < Settings.TradeList.Count; i++)
+                        for (int i = 0; i < SettingsView.TradeList.Count; i++)
                         {
                             iTextSharp.text.Rectangle rect = new iTextSharp.text.Rectangle(trade_spaceRect_ulx + rect_margin, trade_spaceRect_uly - 15f - (i + 1) * rect_margin - (i + 1) * rect_h, trade_spaceRect_ulx + rect_margin + 60f, trade_spaceRect_uly - 15f - (i + 1) * rect_margin - i * rect_h)
                             {
                                 Border = 15,
                                 BackgroundColor = new BaseColor(System.Drawing.Color.Transparent),
-                                BorderColor = new BaseColor(Settings.TradeList[i].Border_Color),
+                                BorderColor = new BaseColor(SettingsView.TradeList[i].Border_Color),
                                 BorderWidth = 1,
                             };
 
@@ -1194,7 +1245,7 @@ namespace Reporter_vCLabs
                             pdfContentByte.BeginText();
 
                             pdfContentByte.SetFontAndSize(BaseFont.CreateFont(), 8f);
-                            pdfContentByte.ShowTextAligned(Element.ALIGN_CENTER, Settings.TradeList[i].Name, (rect.Left + rect.Right) / 2f, (rect.Bottom + rect.Top) / 2f - 4f, 0);
+                            pdfContentByte.ShowTextAligned(Element.ALIGN_CENTER, SettingsView.TradeList[i].Name, (rect.Left + rect.Right) / 2f, (rect.Bottom + rect.Top) / 2f - 4f, 0);
 
                             pdfContentByte.EndText();
                             pdfContentByte.RestoreState();
@@ -1209,7 +1260,7 @@ namespace Reporter_vCLabs
                             {
                                 Border = 15,
                                 BackgroundColor = new BaseColor(System.Drawing.Color.Transparent),
-                                BorderColor = new BaseColor(Settings.TradeList[i].Border_Color),
+                                BorderColor = new BaseColor(SettingsView.TradeList[i].Border_Color),
                                 BorderWidth = 1,
                             };
 
@@ -1221,19 +1272,19 @@ namespace Reporter_vCLabs
                             pdfContentByte.BeginText();
 
                             pdfContentByte.SetFontAndSize(BaseFont.CreateFont(), 8f);
-                            pdfContentByte.ShowTextAligned(Element.ALIGN_CENTER, Settings.TradeList[i].Name, (rect.Left + rect.Right) / 2f, (rect.Bottom + rect.Top) / 2f - 4f, 0);
+                            pdfContentByte.ShowTextAligned(Element.ALIGN_CENTER, SettingsView.TradeList[i].Name, (rect.Left + rect.Right) / 2f, (rect.Bottom + rect.Top) / 2f - 4f, 0);
 
                             pdfContentByte.EndText();
                             pdfContentByte.RestoreState();
                         }
 
-                        for (int i = 5; i < Settings.TradeList.Count; i++)
+                        for (int i = 5; i < SettingsView.TradeList.Count; i++)
                         {
                             iTextSharp.text.Rectangle rect = new iTextSharp.text.Rectangle(trade_spaceRect_ulx + rect_margin + (tlAnnot_ulx - tlAnnot_lrx) / 2, trade_spaceRect_uly - 15f - (i + 1 - 5) * rect_margin - (i + 1 - 5) * rect_h, trade_spaceRect_ulx + rect_margin + 45f + (tlAnnot_ulx - tlAnnot_lrx) / 2, trade_spaceRect_uly - 15f - (i + 1 - 5) * rect_margin - (i - 5) * rect_h)
                             {
                                 Border = 15,
                                 BackgroundColor = new BaseColor(System.Drawing.Color.Transparent),
-                                BorderColor = new BaseColor(Settings.TradeList[i].Border_Color),
+                                BorderColor = new BaseColor(SettingsView.TradeList[i].Border_Color),
                                 BorderWidth = 1,
                             };
                             pdfContentByte.Rectangle(rect);
@@ -1244,7 +1295,7 @@ namespace Reporter_vCLabs
                             pdfContentByte.BeginText();
 
                             pdfContentByte.SetFontAndSize(BaseFont.CreateFont(), 8f);
-                            pdfContentByte.ShowTextAligned(Element.ALIGN_CENTER, Settings.TradeList[i].Name, (rect.Left + rect.Right) / 2f, (rect.Bottom + rect.Top) / 2f - 4f, 0);
+                            pdfContentByte.ShowTextAligned(Element.ALIGN_CENTER, SettingsView.TradeList[i].Name, (rect.Left + rect.Right) / 2f, (rect.Bottom + rect.Top) / 2f - 4f, 0);
 
                             pdfContentByte.EndText();
                             pdfContentByte.RestoreState();
@@ -1357,10 +1408,10 @@ namespace Reporter_vCLabs
         {
             try
             {
-                // GenerateReportWPF a PdfReader to open the existing PDF
+                // GenerateReportView a PdfReader to open the existing PDF
                 PdfReader reader = new PdfReader(selectedFolderPath + "\\" + "reportPDF_noPlot.pdf");
 
-                // GenerateReportWPF a PdfStamper to modify the PDF
+                // GenerateReportView a PdfStamper to modify the PDF
                 PdfStamper stamper = new PdfStamper(reader, new FileStream(selectedFolderPath + "\\" + reportFileName + ".pdf", FileMode.OpenOrCreate));
 
                 int planViewPageNo = 1;
@@ -1424,7 +1475,7 @@ namespace Reporter_vCLabs
                         PdfAnnotation linkAnnotation = iTextSharp.text.pdf.PdfAnnotation.CreateLink(stamper.Writer, new iTextSharp.text.Rectangle(llx, lly, urx, ury), iTextSharp.text.pdf.PdfAnnotation.HIGHLIGHT_INVERT, pdfAction);
 
                         // Border_Color
-                        foreach(var Severity in Settings.SeverityList)
+                        foreach(var Severity in SettingsView.SeverityList)
                         {
                             if(issueView.Severity == Severity.Type) 
                             {
@@ -1474,11 +1525,11 @@ namespace Reporter_vCLabs
             {
                 //For Severity
                 {
-                    if(Settings.SeverityList.Count != 0)
+                    if(SettingsView.SeverityList.Count != 0)
                     {
-                        if(Settings.SeverityList.Exists(s => s.Type.Equals(severity)))
+                        if(SettingsView.SeverityList.Exists(s => s.Type.Equals(severity)))
                         {
-                            var Severity = Settings.SeverityList.Find(s => s.Type.Equals(severity));
+                            var Severity = SettingsView.SeverityList.Find(s => s.Type.Equals(severity));
 
                             pdfContentByte.SetColorFill(new BaseColor(Severity.Text_Color));
                             issueDescriptionRect.BackgroundColor = new BaseColor(Severity.Background_Color);
@@ -1536,12 +1587,12 @@ namespace Reporter_vCLabs
                 {
                     issueDescriptionRect.Border = 15;
 
-                    if(Settings.TradeList.Count != 0)
+                    if(SettingsView.TradeList.Count != 0)
                     {
 
-                        if(Settings.TradeList.Exists(t => t.Name.Equals(trade)))
+                        if(SettingsView.TradeList.Exists(t => t.Name.Equals(trade)))
                         {
-                            var Trade = Settings.TradeList.Find(t => t.Name.Equals(trade));
+                            var Trade = SettingsView.TradeList.Find(t => t.Name.Equals(trade));
 
                             issueDescriptionRect.BorderWidth = Trade.Border_Thickness;
                             issueDescriptionRect.BorderColor = new BaseColor(Trade.Border_Color);
@@ -1615,19 +1666,21 @@ namespace Reporter_vCLabs
             {
                 case 1:
                     {
-                        pagecount = SuperSavedViewPoints.Count;
+                        pagecount = _issueViewsToBePlotted.Count + 1;
                     }
                     break;
 
                 case 4:
                     {
-                        pagecount = SuperSavedViewPoints.Count(item => item.IsPlanView) + (SuperSavedViewPoints.Count(item => !item.IsPlanView) + 3) / 4;
+                        //pagecount = _issueViewsToBePlotted.Count(item => item.IsPlanView) + (_issueViewsToBePlotted.Count(item => !item.IsPlanView) + 3) / 4;
+                        pagecount = (_issueViewsToBePlotted.Count + 3) / 4 + 1;
                     }
                     break;
 
                 case 6:
                     {
-                        pagecount = SuperSavedViewPoints.Count(item => item.IsPlanView) + (SuperSavedViewPoints.Count(item => !item.IsPlanView) + 5) / 6;
+                        //pagecount = _issueViewsToBePlotted.Count(item => item.IsPlanView) + (_issueViewsToBePlotted.Count(item => !item.IsPlanView) + 5) / 6;
+                        pagecount = (_issueViewsToBePlotted.Count + 5) / 6 + 1;
                     }
                     break;
 
@@ -1636,10 +1689,11 @@ namespace Reporter_vCLabs
             return pagecount;
         }
 
-        private void Select_Planview_ComboBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void PlotIssues()
         {
 
         }
+        
 
         
     }

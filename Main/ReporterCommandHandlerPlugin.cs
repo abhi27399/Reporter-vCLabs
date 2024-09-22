@@ -14,7 +14,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.util.collections;
 using System.Windows.Forms;
 using static SSO_Integrator.SSOIntegrator;
 
@@ -45,21 +44,13 @@ namespace Reporter_vCLabs
         {
             try
             {
-                var result = SSO();
-
-                Autodesk.Navisworks.Api.Application.ActiveDocument.SavedViewpoints.Changed += SavedViewpoints_Changed;
-
+                //var result = SSO();
             }
 
             catch(Exception ex)
             {
-                MessageBox.Show($"Error with SSO : {ex.Message}");
+                ex.Log("ReporterCommandHandlerPlugin", "OnLoaded(SSO)");
             }
-        }
-
-        private void SavedViewpoints_Changed(object sender, SavedItemChangedEventArgs e)
-        {
-            throw new NotImplementedException();
         }
 
         public override int ExecuteCommand(string name, params string[] parameters)
@@ -76,87 +67,102 @@ namespace Reporter_vCLabs
                 return -1;
             }
 
-            // Making list of saved viewpoints
-            SuperSavedViewPoints = document.GetSuperSavedViewPoints();
-
-            if (UserValidity == null)
+            try
             {
-                return -1;
+                // Getting saved viewpoints as super saved viewpoints
+                SuperSavedViewPoints = document.GetSuperSavedViewPoints();
             }
 
-            if(UserValidity.Contains("Valid User"))
+            catch(Exception ex)
             {
-                switch (name)
-                {
-                    case "LogIssue":
+                ex.Log("ReporterCommandHandlerPlugin", "ExecuteCommand(GetSuperSavedViewPoints)");
+            }
+
+            //if (UserValidity == null)
+            //{
+            //    return -1;
+            //}
+
+            //if (!UserValidity.Contains("Valid User"))
+            //{
+            //    return -1;
+            //}
+
+            switch (name)
+            {
+                case "LogIssue":
+
+                    SwitchVisibility();
+
+                    break;
+
+                case "PreviewPlan":
+
+                    try
+                    {
+                        //MessageBox.Show("Feature Under Development");
+                        PreviewPlan previewPlan = new PreviewPlan();
+                        previewPlan.Show();
+                    }
+
+                    catch (Exception ex)
+                    {
+                        ex.Log("ReporterCommandHandlerPlugin", "ExecuteCommand(PreviewPlanView)");
+                    }
+
+                    break;
+
+                case "SelectTemplate":
+
+                    SelectTemplateView templateWPF = new SelectTemplateView();
+                    templateWPF.ShowDialog();
+
+                    break;
+
+                case "GenerateReport":
+
+                    try
+                    {
+                        GenerateReportView generateReportView = new GenerateReportView();
+                        generateReportView.ShowDialog();
+                        GenerateReportView.IsRunning = false;
+                    }
+
+                    catch (Exception ex)
+                    {
+                        ex.Log("ReporterCommandHandlerPlugin", "ExecuteCommand(GenerateReportView)");
+                    }
+
+                    break;
+
+                case "SerialNumber":
+
+                    UpdateSerialNumber(document);
+
+                    break;
+
+                case "Settings":
+                    try
+                    {
+                        SettingsView settingsView = new SettingsView();
+                        settingsView.ShowDialog();
+                    }
+
+                    catch (Exception ex)
+                    {
+                        ex.Log("ReporterCommandHandlerPlugin", "ExecuteCommand(SettingsView)");
+                    }
 
 
-                        SwitchVisibility();
 
-                        break;
+                    break;
 
-                    case "PreviewPlan":
+                case "Statistics":
 
-                        try
-                        {
-                            MessageBox.Show("Feature Under Development");
-                        }
+                    ShowStatistics();
 
-                        catch(Exception ex)
-                        {
-                            MessageBox.Show(ex.ToString());
-                        }
+                    break;
 
-                        
-
-                        //PreviewPlan previewPlan = new PreviewPlan();
-                        //previewPlan.Show();
-
-                        break;
-
-                    case "SelectTemplate":
-
-                        SelectTemplateView templateWPF = new SelectTemplateView();
-                        templateWPF.ShowDialog();
-
-                        break;
-
-                    case "GenerateReport":
-
-                        try
-                        {
-                            GenerateReportWPF createReportWPF = new GenerateReportWPF();
-                            createReportWPF.ShowDialog();
-                            GenerateReportWPF.IsRunning = false;
-                        }
-
-                        catch (Exception ex)
-                        {
-                            System.Windows.MessageBox.Show($"Error : {ex.Message}");
-                        }
-
-                        break;
-
-                    case "SerialNumber":
-
-                        UpdateSerialNumber(document);
-
-                        break;
-
-                    case "Settings":
-
-                        Settings settings = new Settings();
-                        settings.ShowDialog();
-
-                        break;
-
-                    case "Statistics":
-
-                        ShowStatistics();
-
-                        break;
-
-                }
             }
 
             return 0;
@@ -175,7 +181,7 @@ namespace Reporter_vCLabs
 
             catch (Exception ex)
             {
-                
+                ex.Log("ReporterCommandHandlerPlugin", "SSO(StoreValidations)");
             }
 
             return result;
@@ -221,13 +227,11 @@ namespace Reporter_vCLabs
 
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                ex.Log("ReporterCommandHandlerPlugin", "StoreValidations");
             }
 
         }
-
         
-
         private void SwitchVisibility()
         {
             try
@@ -302,7 +306,7 @@ namespace Reporter_vCLabs
 
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error : {ex.Message}");
+                ex.Log("ReporterCommandHandlerPlugin", "SwitchVisibility");
             }
             
         }
@@ -400,7 +404,7 @@ namespace Reporter_vCLabs
 
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error : {ex.Message}");
+                ex.Log("ReporterCommandHandlerPlugin", "UpdateSerialNumber");
             }
         }
 
@@ -432,9 +436,9 @@ namespace Reporter_vCLabs
 
                 string datatable = string.Empty;
 
-                if(Settings.ProjectDetailsDictionary.Count !=  0)
+                if(SettingsView.ProjectDetailsDictionary.Count !=  0)
                 {
-                    datatable = $"{Settings.ProjectDetailsDictionary["Region Name"]}; {Settings.ProjectDetailsDictionary["Region Name"]}; {Settings.ProjectDetailsDictionary["Pour Name"]}; {Settings.ProjectDetailsDictionary["Date"]}";
+                    datatable = $"{SettingsView.ProjectDetailsDictionary["Region Name"]}; {SettingsView.ProjectDetailsDictionary["Region Name"]}; {SettingsView.ProjectDetailsDictionary["Pour Name"]}; {SettingsView.ProjectDetailsDictionary["Date"]}";
                 }
 
                 else if(File.Exists(@"C:\ProgramData\Autodesk\Navisworks Manage 2023\projectDetailsDictionary.txt"))
@@ -510,7 +514,7 @@ namespace Reporter_vCLabs
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error Geting Statistics : {ex.Message}");
+                ex.Log("ReporterCommandHandlerPlugin", "ShowStatistics");
             }
         }
 
@@ -521,7 +525,7 @@ namespace Reporter_vCLabs
         {
             try
             {
-                if (Settings.ImageQualityValue == 1)
+                if (SettingsView.ImageQualityValue == 1)
                 {
                     return;
                 }
@@ -546,7 +550,7 @@ namespace Reporter_vCLabs
 
                             int fontSize = variantData.ToInt32();
 
-                            fontSize = Convert.ToInt32(fontSize * Settings.ImageQualityValue);
+                            fontSize = Convert.ToInt32(fontSize * SettingsView.ImageQualityValue);
 
                             VariantData newVariantData = VariantData.FromInt32(fontSize);
 
@@ -560,7 +564,7 @@ namespace Reporter_vCLabs
 
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error Increasing Markup FontSize : {ex.Message}");
+                ex.Log("ReporterCommandHandlerPlugin", "IncreaseMarkupFontSize");
             }
         }
 
@@ -571,7 +575,7 @@ namespace Reporter_vCLabs
         {
             try
             {
-                if (Settings.ImageQualityValue == 1)
+                if (SettingsView.ImageQualityValue == 1)
                 {
                     return;
                 }
@@ -596,7 +600,7 @@ namespace Reporter_vCLabs
 
                             int fontSize = variantData.ToInt32();
 
-                            fontSize = Convert.ToInt32(fontSize / Settings.ImageQualityValue);
+                            fontSize = Convert.ToInt32(fontSize / SettingsView.ImageQualityValue);
 
                             VariantData newVariantData = VariantData.FromInt32(fontSize);
 
@@ -610,7 +614,7 @@ namespace Reporter_vCLabs
 
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error Decreasing Markup FontSize : {ex.Message}");
+                ex.Log("ReporterCommandHandlerPlugin", "DecreaseMarkupFontSize");
             }
         }
 
@@ -620,7 +624,7 @@ namespace Reporter_vCLabs
         /// <returns>Size Enhancing Factor</returns>
         public static double GetSizeEnhancingFactor()
         {
-            double sizeEnhancingFactor = Settings.ImageQualityValue;
+            double sizeEnhancingFactor = SettingsView.ImageQualityValue;
             return sizeEnhancingFactor;
         }
 

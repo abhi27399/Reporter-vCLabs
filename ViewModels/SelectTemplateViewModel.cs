@@ -1,12 +1,7 @@
-﻿using Reporter_vCLabs.;
-using Reporter_vCLabs.Command;
+﻿using Reporter_vCLabs.Command;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Input;
 
@@ -21,12 +16,19 @@ namespace Reporter_vCLabs.ViewModels
         public static bool IsDefineSpaceForTradeLegends_CheckBox_Checked { get; set; }
         public static bool IsDefineSpaceForSeverityLegends_CheckBox_Checked { get; set; }
 
+        public ICommand BrowseCommand { get; set; }
+
+        public ICommand ShowCommand { get; set; }
+
         public SelectTemplateViewModel(SelectTemplateView selectTemplateView)
         {
             this.selectTemplateView = selectTemplateView;
+
+            BrowseCommand = new RelayCommand(BrowseTemplate);
+            ShowCommand = new RelayCommand(ShowTemplate);
         }
 
-        public void BrowseTemplate()
+        private void BrowseTemplate()
         {
             OpenFileDialog fdlg = new OpenFileDialog
             {
@@ -42,7 +44,7 @@ namespace Reporter_vCLabs.ViewModels
             }
         }
 
-        public void ShowTemplate()
+        private void ShowTemplate()
         {
             Process.Start(TemplatePath);
         }

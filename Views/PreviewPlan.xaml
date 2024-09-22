@@ -4,48 +4,55 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
         xmlns:local="clr-namespace:Reporter_vCLabs"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:sd="micros"
         Title="Preview Plan"
-        Height="816" Width="1000"
+        Height="926" Width="1264"
         ResizeMode="NoResize">
+    
+    
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="9*"/>
+            <RowDefinition Height="12*"/>
             <RowDefinition Height="1*"/>
         </Grid.RowDefinitions>
 
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="1*"/>
+        <Grid.ColumnDefinitions>            
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="2*"/>
             
+
         </Grid.ColumnDefinitions>
 
-        <Label Grid.Row="1" Grid.Column="0" Content="Select Plan View :" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Black" />
+        <Label Grid.Row="1" Grid.Column="0" Content="Select Plan:" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Black" />
+        
 
-        <ComboBox Name="Select_Planview_ComboBox" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                  IsEditable="True" IsReadOnly="False" IsTextSearchEnabled="True" IsTextSearchCaseSensitive="True"  VerticalContentAlignment="Center" 
-                  SelectionChanged="Select_Planview_ComboBox_SelectionChanged"  Height="25" Width="175"/>
+        <ComboBox x:Name="SelectPlan_ComboBox" Grid.Row="1" Grid.Column="1" FontSize="15" HorizontalAlignment="Left" VerticalAlignment="Center"
+                  VerticalContentAlignment="Center"  Height="30" Width="200" IsEditable="True" IsTextSearchEnabled="True" IsReadOnly="False" IsTextSearchCaseSensitive="False" StaysOpenOnEdit="True" DisplayMemberPath="SavedViewpoint.DisplayName"/>
+
+        <Label Grid.Row="1" Grid.Column="2" Content="Select Issues:" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Black" />
+
+        <xctk:CheckComboBox x:Name="SelectIssue_CheckComboBox" Grid.Row="1" Grid.Column="3" FontSize="15" HorizontalAlignment="Left" VerticalAlignment="Center"
+                            VerticalContentAlignment="Center"  Height="30" Width="200"  DisplayMemberPath="SavedViewpoint.DisplayName" SelectedMemberPath="ToBePlotted" />
 
 
 
         <Button Name="Preview_Button" Grid.Row="1" Grid.Column="4" Content="Preview" FontSize="15" Width="120" Height="30"
                 HorizontalAlignment="Center" VerticalAlignment="Center"  Click="Preveiw_Button_Click" />
 
-        <Button Name="Previous_Button" Grid.Row="1" Grid.Column="5" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                Width="120" Height="30" Content="&lt;&lt; Previous" FontSize="15"  Click="Previous_Button_Click" />
 
-        <Button Name="Next_Button" Grid.Row="1" Grid.Column="6" HorizontalAlignment="Center"  VerticalAlignment="Center" 
-                Width="120" Height="30" Content="Next >>" FontSize="15" Click="Next_Button_Click" />
-        
-        
 
-        <Image Name="imagePreview" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="7" Height="700" Width="940" HorizontalAlignment="Center" VerticalAlignment="Center"  />
-        <Canvas Name="canvas" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="7" Height="700" Width="940" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <Canvas Name="canvas" Grid.Row="0" Grid.Column="0"  Grid.ColumnSpan="7" Width="1200" Height="800" HorizontalAlignment="Center"  VerticalAlignment="Center">
+            <Image Name="imagePreview" Height="800" Width="1200" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Canvas>
+
+        <Button x:Name="Cancel_Button" Grid.Row="1" Grid.Column="5" Height="30" Width="120" Content="Cancel" FontSize="15"  HorizontalAlignment="Center" VerticalAlignment="Center" Click="Cancel_Button_Click"/>
+        <Button x:Name="Apply_Button" Grid.Row="1" Grid.Column="6" Height="30" Width="120" Content="Apply" FontSize="15"  HorizontalAlignment="Center" VerticalAlignment="Center" Click="Apply_Button_Click" ToolTip="If Applied, this plan view will be added in the report as the first page and only the selected issues will be added in the subsequent pages of the report"/>
 
 
 

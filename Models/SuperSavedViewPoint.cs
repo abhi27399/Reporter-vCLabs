@@ -5,13 +5,15 @@ using System.Linq;
 namespace Reporter_vCLabs.Model
 {
     /// <summary>
-    /// A class which has savedviewpoint instance and its details as properties; and some methods to perform manipulation on it
+    /// A class which has a savedviewpoint instance and its details as properties; and some methods to perform manipulation on it
     /// </summary>
     public class SuperSavedViewPoint
     {
         public SuperSavedViewPoint(SavedViewpoint savedViewpoint)
         {
             _savedViewpoint = savedViewpoint;
+            
+            _toBePlotted = true;
 
             if (savedViewpoint.DisplayName[1] == '.' || savedViewpoint.DisplayName[2] == '.' || savedViewpoint.DisplayName[3] == '.')
             {
@@ -55,7 +57,7 @@ namespace Reporter_vCLabs.Model
             
         }
 
-        private readonly SavedViewpoint _savedViewpoint;
+        private readonly SavedViewpoint _savedViewpoint;       
 
         private string _imagePath;
 
@@ -65,15 +67,18 @@ namespace Reporter_vCLabs.Model
 
         private bool _isPlanView;
 
+        private bool _toBePlotted;
+
         private bool _hasSerialNumber;
 
         private string _serialNumber;
 
-        public SavedViewpoint SavedViewpoint { get => _savedViewpoint;}
+        public SavedViewpoint SavedViewpoint { get => _savedViewpoint;}        
         public string ImagePath { get => _imagePath; set => _imagePath = value; }
         public string Trade { get => _trade; set => _trade = value; }
         public string Severity { get => _severity; set => _severity = value; }
         public bool IsPlanView { get => _isPlanView; set => _isPlanView = value; }
+        public bool ToBePlotted { get => _toBePlotted; set => _toBePlotted = value; }
         public bool HasSerialNumber { get => _hasSerialNumber; set => _hasSerialNumber = value; }
         public string SerialNumber { get => _serialNumber; set => _serialNumber = value; }
 

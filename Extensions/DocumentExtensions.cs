@@ -27,7 +27,7 @@ namespace Reporter_vCLabs
                 else
                 {
                     var childrenCollection = (savedItem as GroupItem).Children;
-                    GetSavedViewpointsFrom(childrenCollection);
+                    savedViewpoints.AddRange(GetSavedViewpointsFrom(childrenCollection));
                 }
             }
 
@@ -56,7 +56,7 @@ namespace Reporter_vCLabs
                 else
                 {
                     var childrenItemCollection = ((GroupItem)item).Children;
-                    GetSuperSavedViewPoints(childrenItemCollection);
+                    superSavedViewPoints.AddRange(GetSuperSavedViewPoints(childrenItemCollection));
                 }
 
             }

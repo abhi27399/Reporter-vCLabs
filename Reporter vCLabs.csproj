@@ -278,8 +278,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions\DocumentExtensions.cs" />
+    <Compile Include="Extensions\ExceptionExtensions.cs" />
     <Compile Include="Extensions\SavedViewpointExtensions.cs" />
-    <Compile Include="Models\Rectangle.cs" />
+    <Compile Include="Models\Rect.cs" />
     <Compile Include="Models\Report.cs" />
     <Compile Include="Main\LogIssueDockPanePlugin.cs" />
     <Compile Include="MixPanel.cs" />
@@ -358,11 +359,6 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy/Y "$(TargetDir)*.*" "C:\Program Files\Autodesk\Navisworks Manage 2023\Plugins\$(TargetName)\"
-mkdir "C:\Program Files\Autodesk\Navisworks Manage 2023\Plugins\$(TargetName)\Images"
-xcopy /Y "$(ProjectDir)Images" "C:\Program Files\Autodesk\Navisworks Manage 2023\Plugins\$(TargetName)\Images"
-
-xcopy /Y "$(ProjectDir)vCLabsRibbon.xaml" "C:\Program Files\Autodesk\Navisworks Manage 2023\Plugins\$(TargetName)\en-US\"
-</PostBuildEvent>
+    <PostBuildEvent>echo F|xcopy "$(TargetDir)"  "C:\Program Files\Autodesk\Navisworks Manage 2023\Plugins\$(TargetName)\" /i /e /y /r</PostBuildEvent>
   </PropertyGroup>
 </Project>
